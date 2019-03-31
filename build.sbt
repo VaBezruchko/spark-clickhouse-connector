@@ -11,7 +11,7 @@ lazy val creds = Seq(credentials += Credentials(Path.userHome / ".sbt" / "creden
 val commonSettings = creds ++ Seq(
   name :=  "spark-clickhouse-connector",
   organization := "io.clickhouse",
-  version := "0.21",
+  version := "0.22",
   scalaVersion := "2.11.12",
   publishMavenStyle := true,
 

@@ -97,7 +97,7 @@ class ClickhouseRDD
     * User defined partitioning strategy
     * @param customPartitions Sequence of partition for splitting each shard with small parts.
     */
-  def withoutCustomPartitioning(customPartitions: Seq[String]): Self = {
+  def withCustomPartitioning(customPartitions: Seq[String]): Self = {
     copy(
       clickhousePartitioner = new CustomClickhousePartitioner(connector, customPartitions)
     )
