@@ -76,7 +76,7 @@ val ss = SparkSession.builder()
 
 ```
 
-### Add functions on the `SparkContext`, `SparkSession`, `RDD`, and `DataFrame`:
+### Add functions on the `SparkContext` and `RDD`:
 
 ```scala
 import io.clickhouse.spark.connector._
@@ -157,8 +157,7 @@ In this case connector creates only 4 spark-partitions.
 
 val sc = ss.sparkContext
 val query = s"select started, counter_id, col1, col2 from data.some_table_local " + 
-	s" where dated >='${startDate.toString("yyyy-MM-dd")}' and dated <= '${endDate.toString("yyyy-MM-dd")} " + 
-	s" and counter_id in (1,2,3)'"
+	s" where counter_id in (1,2,3)'"
 
 sc.clickhouseTable(query, "some_cluster")
  .withCustomPartitioning(Seq("dated >= '2019-01-01' and dated < '2019-01-16'",
