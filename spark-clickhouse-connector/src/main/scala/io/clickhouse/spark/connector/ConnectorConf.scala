@@ -8,13 +8,17 @@ case class ConnectorConf (сlickhouseDriver:String = ConnectorConf.DefaultClickh
                           clickhouseMetricsEnable:Boolean = ConnectorConf.DefaultClickhouseMetricsEnable,
                           сlickhouseSocketTimeoutMs:Int = ConnectorConf.DefaultClickhouseSocketTimeoutMs,
                           clickhouseAutoDiscoveryEnable:Boolean = ConnectorConf.DefaultClickhouseAutoDiscoveryEnable,
-                          clickhousePortDefault:Int = ConnectorConf.DefaultClickhousePortDefault
+                          clickhousePortDefault:Int = ConnectorConf.DefaultClickhousePortDefault,
+                          clickhouseUser:String = ConnectorConf.DefaultClickhouseUser,
+                          clickhousePassword:String = ConnectorConf.DefaultClickhousePassword
                          )
 
 object ConnectorConf {
 
   val ClickhouseDriverProperty = "spark.clickhouse.driver"
   val ClickhouseUrlProperty = "spark.clickhouse.url"
+  val ClickhouseUserProperty = "spark.clickhouse.user"
+  val ClickhousePasswordProperty = "spark.clickhouse.password"
   val ClickhouseAutoDiscoveryProperty = "spark.clickhouse.cluster.auto-discovery"
   val ClickhouseHttpPortDefaultProperty = "spark.clickhouse.cluster.port.default"//is used with auto-discovery options
   val ClickhouseSocketTimeoutProperty = "spark.clickhouse.socket.timeout.ms"
@@ -29,6 +33,9 @@ object ConnectorConf {
   val DefaultClickhouseAutoDiscoveryEnable:Boolean = false
   val DefaultClickhousePortDefault:Int = 8123
 
+  val DefaultClickhouseUser:String = null
+  val DefaultClickhousePassword:String = null
+
 
   def fromSparkConf(conf: SparkConf): ConnectorConf = {
 
@@ -40,7 +47,9 @@ object ConnectorConf {
       clickhouseMetricsEnable = conf.getBoolean(ClickhouseMetricsEnableProperty, DefaultClickhouseMetricsEnable),
       сlickhouseSocketTimeoutMs = conf.getInt(ClickhouseSocketTimeoutProperty, DefaultClickhouseSocketTimeoutMs),
       clickhouseAutoDiscoveryEnable = conf.getBoolean(ClickhouseAutoDiscoveryProperty, DefaultClickhouseAutoDiscoveryEnable),
-      clickhousePortDefault =  conf.getInt(ClickhouseHttpPortDefaultProperty, DefaultClickhousePortDefault)
+      clickhousePortDefault =  conf.getInt(ClickhouseHttpPortDefaultProperty, DefaultClickhousePortDefault),
+      clickhouseUser =  conf.get(ClickhouseUserProperty, DefaultClickhouseUser),
+      clickhousePassword =  conf.get(ClickhousePasswordProperty, DefaultClickhousePassword)
     )
   }
 

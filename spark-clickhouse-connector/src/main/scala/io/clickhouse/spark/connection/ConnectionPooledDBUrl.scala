@@ -14,7 +14,9 @@ case class JdbcConnection(shard: String, connection: Connection)
 class ConnectionPooledDBUrl(val dataSource: Map[String, String],
                             val driverName: String,
                             val poolSizePetShard: Int,
-                            val socketTimeoutMs: Int) extends Serializable {
+                            val socketTimeoutMs: Int,
+                            val user: String,
+                            val password: String) extends Serializable {
 
   private val LOG = LoggerFactory.getLogger(classOf[ConnectionPooledDBUrl])
 
@@ -23,6 +25,13 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
   private val connectionProperties = {
     val prop = new Properties
     prop.put("socket_timeout", socketTimeoutMs.toString)
+
+    if (user != null){
+      prop.put("user", user)
+    }
+    if (password != null){
+      prop.put("password", password)
+    }
     prop
   }
 

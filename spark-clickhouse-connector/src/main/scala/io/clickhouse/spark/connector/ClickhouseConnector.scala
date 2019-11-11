@@ -146,7 +146,8 @@ object ClickhouseConnector {
         value
       case None =>
         val value = new ConnectionPooledDBUrl(ds.value, conf.сlickhouseDriver,
-          conf.maxConnectionsPerExecutor, conf.сlickhouseSocketTimeoutMs)
+          conf.maxConnectionsPerExecutor, conf.сlickhouseSocketTimeoutMs,
+          conf.clickhouseUser, conf.clickhousePassword)
         connectionPoolCache.putIfAbsent((conf,ds), value) match {
           case None =>
             value
