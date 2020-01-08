@@ -93,6 +93,20 @@ class ClickhouseRDD
       clickhousePartitioner = new SimpleClickhousePartitioner(connector)
     )
   }
+
+  /**
+    * Dated partitioning strategy: Dated partition for each shard.
+    * * @param startDt
+    * * @param endDt
+    * * @param rangeType
+    * * @param partitionKeyName
+    * * @return
+    */
+  def withoutDatedPartitioning(startDt: DateTime, endDt: DateTime, rangeType: RangeType, partitionKeyName: String): Self = {
+    copy(
+      clickhousePartitioner = new DatedClickhousePartitioner(connector, (startDt, endDt), rangeType, partitionKeyName)
+    )
+  }
   /**
     * User defined partitioning strategy
     * @param customPartitions Sequence of partition for splitting each shard with small parts.

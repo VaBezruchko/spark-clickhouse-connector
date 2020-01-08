@@ -4,7 +4,7 @@ import java.net.InetAddress
 
 import scala.collection.concurrent.TrieMap
 
-object NodeAddress  {
+object NodeAddress {
 
   private val addressCache = new TrieMap[InetAddress, Set[String]]
 

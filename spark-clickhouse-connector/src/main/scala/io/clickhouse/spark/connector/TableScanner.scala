@@ -12,10 +12,10 @@ class TableScanner(connectionPool: ConnectionPooledDBUrl,
 
   private var _count = 0
 
-  val resultSet:ResultSet = statement.executeQuery()
+  val resultSet: ResultSet = statement.executeQuery()
 
-   /** Returns the number of successful invocations of `next` */
-  def count:Int = _count
+  /** Returns the number of successful invocations of `next` */
+  def count: Int = _count
 
   override protected def getNext: ResultSet = {
     if (resultSet.next()) {
