@@ -35,6 +35,10 @@ or scala 2.12:
 
     sbt '++2.12.9 assembly'
 
+or two versions of scala
+
+    sbt '+ assembly'
+
 A jar with shaded dependencies will be generated to directory spark-clickhouse-connector/target/scala-2.11 e.g. spark-clickhouse-connector_2.11-2.4.0_0.23.jar
 
 To publish to local maven nexus
