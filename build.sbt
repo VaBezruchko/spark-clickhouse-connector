@@ -1,9 +1,10 @@
 import sbt.Keys.{credentials, libraryDependencies, pomExtra, publishM2Configuration, run, version}
 import Versions._
-import sbt.Credentials
+import sbt.{Credentials, CrossVersion}
 import sbtassembly.AssemblyKeys.{assembly, assemblyJarName, assemblyOption}
 
 
+val versionStatus = settingKey[Unit]("The Scala version used in cross-build reapply for '+ package', '+ publish'.")
 val nexus_local = IO.read(new File(Path.userHome.absolutePath + "/.sbt/nexus_url"))
 lazy val creds = Seq(credentials += Credentials(Path.userHome / ".sbt" / "credentials"))
 
@@ -12,7 +13,9 @@ val commonSettings = creds ++ Seq(
   name :=  "spark-clickhouse-connector",
   organization := "io.clickhouse",
   version := "0.23",
-  scalaVersion := "2.11.12",
+  crossScalaVersions   := Seq(Versions.scala211, Versions.scala212),
+  crossVersion         := CrossVersion.binary,
+  versionStatus        := Versions.status(scalaVersion.value, scalaBinaryVersion.value),
   publishMavenStyle := true,
 
   publishConfiguration := publishConfiguration.value.withOverwrite(true),
@@ -36,6 +39,8 @@ val commonSettings = creds ++ Seq(
     </developers>
 
 )
+
+//lazy val scalaBinary = scala_version.dropRight(2)
 
 
 
@@ -65,7 +70,7 @@ lazy val assemblyJar = (project in file("spark-clickhouse-connector"))
     skip in publishM2 := true,
     assemblyOption in assembly ~= { _.copy(includeScala = false) },
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)),
-    assemblyJarName in assembly := s"${name.value}_2.11-${Versions.Spark}_${version.value}.jar",
+    assemblyJarName in assembly := s"${name.value}_${scalaBinaryVersion.value}-${Versions.Spark}_${version.value}.jar",
     assemblyShadeRules in assembly := Seq(
       ShadeRule.rename("org.apache.commons.**" -> "shade.io.clickhouse.apache.commons.@1").inAll
     )
