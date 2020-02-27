@@ -13,13 +13,13 @@ import org.apache.spark.SparkContext
 import scala.collection.concurrent.TrieMap
 
 final case class ShardUnavailableException(private val message: String = "",
-                                 private val cause: Throwable = None.orNull)
+                                           private val cause: Throwable = None.orNull)
   extends Exception(message, cause)
 
-class ClickhouseConnector (conf: ConnectorConf,
-                           initDataSource: ClickHouseDataSource,
-                           cluster: Option[String]
-                          )
+class ClickhouseConnector(conf: ConnectorConf,
+                          initDataSource: ClickHouseDataSource,
+                          cluster: Option[String]
+                         )
   extends Serializable with Logging {
 
   val (
@@ -136,26 +136,26 @@ class ClickhouseConnector (conf: ConnectorConf,
 
 object ClickhouseConnector {
 
-  private val connectionPoolCache = new TrieMap[(ConnectorConf,ClickHouseDataSource), ConnectionPooledDBUrl]
+  private val connectionPoolCache = new TrieMap[(ConnectorConf, ClickHouseDataSource), ConnectionPooledDBUrl]
 
-  def apply(sc: SparkContext, cluster: Option[String]): ClickhouseConnector =  {
-    val conf:ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
+  def apply(sc: SparkContext, cluster: Option[String]): ClickhouseConnector = {
+    val conf: ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
 
     val dataSource = ClickHouseDataSource(conf.сlickhouseUrl)
 
     new ClickhouseConnector(conf, dataSource, cluster)
   }
 
-  def getConnectionPool(conf: ConnectorConf, ds: ClickHouseDataSource) : ConnectionPooledDBUrl = synchronized {
+  def getConnectionPool(conf: ConnectorConf, ds: ClickHouseDataSource): ConnectionPooledDBUrl = synchronized {
 
-    connectionPoolCache.get((conf,ds)) match {
+    connectionPoolCache.get((conf, ds)) match {
       case Some(value) =>
         value
       case None =>
         val value = new ConnectionPooledDBUrl(ds.value, conf.сlickhouseDriver,
           conf.maxConnectionsPerExecutor, conf.сlickhouseSocketTimeoutMs,
           conf.clickhouseUser, conf.clickhousePassword)
-        connectionPoolCache.putIfAbsent((conf,ds), value) match {
+        connectionPoolCache.putIfAbsent((conf, ds), value) match {
           case None =>
             value
           case Some(_) =>

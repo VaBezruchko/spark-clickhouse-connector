@@ -7,15 +7,15 @@ import org.apache.spark.TaskContext
 import org.apache.spark.executor.InputMetrics
 
 /** A trait that provides a method to update read metrics which are collected for connector related tasks.
-  * The appropriate instance is created by the companion object.
-  *
-  */
+ * The appropriate instance is created by the companion object.
+ *
+ */
 trait InputMetricsUpdater {
   /** Updates the metrics being collected for the connector after reading each single row. This method
-    * is not thread-safe.
-    *
-    * @param row the row which has just been read
-    */
+   * is not thread-safe.
+   *
+   * @param row the row which has just been read
+   */
   def updateMetrics(row: ResultSet): ResultSet = row
 
   def finish(): Long
@@ -25,21 +25,21 @@ trait InputMetricsUpdater {
 }
 
 trait JdbcRowMeter {
-  def sizeOf(rs:ResultSet):Int
+  def sizeOf(rs: ResultSet): Int
 }
 
 object InputMetricsUpdater {
 
   /** Creates the appropriate instance of `InputMetricsUpdater`.
-    *
-    * The created instance will be updating task metrics so
-    * that Spark will report them in the UI. Remember that this is supported for Spark 1.2+.
-    *
-     */
+   *
+   * The created instance will be updating task metrics so
+   * that Spark will report them in the UI. Remember that this is supported for Spark 1.2+.
+   *
+   */
   def apply(
-    taskContext: TaskContext,
-    conf: ConnectorConf
-  ): InputMetricsUpdater = {
+             taskContext: TaskContext,
+             conf: ConnectorConf
+           ): InputMetricsUpdater = {
 
     val tm = taskContext.taskMetrics()
     val inputMetrics = tm.inputMetrics
@@ -67,9 +67,9 @@ object InputMetricsUpdater {
   }
 
   private class ClickhouseInputMetricsUpdater(rowMeter: JdbcRowMeter, inputMetrics: InputMetrics)
-    extends InputMetricsUpdater  with Timer {
+    extends InputMetricsUpdater with Timer {
 
-    def getRowBinarySize(row: ResultSet):Int = {
+    def getRowBinarySize(row: ResultSet): Int = {
 
       if (rowMeter != null) {
         rowMeter.sizeOf(row)

@@ -8,16 +8,16 @@ class SparkClickhouseFunctions(@transient val sc: SparkContext) extends Serializ
 
   def clickhouseTable(query: String, cluster: String)
                      (implicit connector: ClickhouseConnector = ClickhouseConnector(sc, Some(cluster)),
-                         readConf: ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
-                         ) = new ClickhouseRDD(sc, connector, query, readConf,  SimpleClickhousePartitioner(connector))
+                      readConf: ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
+                     ) = new ClickhouseRDD(sc, connector, query, readConf, SimpleClickhousePartitioner(connector))
 
   /**
-    * Used for clickhouse installation without 'cluster' option e.g. single server installation.
-    * It's assumed, that all hosts in datasource are single shard and contains the same data.
-    */
+   * Used for clickhouse installation without 'cluster' option e.g. single server installation.
+   * It's assumed, that all hosts in datasource are single shard and contains the same data.
+   */
   def clickhouseTableWithoutCluster(query: String)
-                     (implicit connector: ClickhouseConnector = ClickhouseConnector(sc, None),
-                      readConf: ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
-                     ) = new ClickhouseRDD(sc, connector, query, readConf,  SimpleClickhousePartitioner(connector))
+                                   (implicit connector: ClickhouseConnector = ClickhouseConnector(sc, None),
+                                    readConf: ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
+                                   ) = new ClickhouseRDD(sc, connector, query, readConf, SimpleClickhousePartitioner(connector))
 
 }

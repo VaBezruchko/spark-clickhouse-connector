@@ -26,10 +26,10 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
     val prop = new Properties
     prop.put("socket_timeout", socketTimeoutMs.toString)
 
-    if (user != null){
+    if (user != null) {
       prop.put("user", user)
     }
-    if (password != null){
+    if (password != null) {
       prop.put("password", password)
     }
     prop
@@ -57,14 +57,14 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
 
   def releaseConnection(con: JdbcConnection): Unit = {
     try
-      this.pool.returnObject(con.shard , con)
+      this.pool.returnObject(con.shard, con)
     catch {
       case ex: Exception =>
         LOG.warn("Can not close connection.", ex)
     }
   }
 
-  implicit def funcToRunnable( func : () => Unit ): Runnable = () => func()
+  implicit def funcToRunnable(func: () => Unit): Runnable = () => func()
 
   def close(): Unit = {
     new Thread(() => {
@@ -95,7 +95,6 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
   }
 
 
-
   private class PoolableFactory extends KeyedPooledObjectFactory[String, JdbcConnection] {
     @throws[SQLException]
     override def makeObject(shard: String): PooledObject[JdbcConnection] = {
@@ -114,7 +113,7 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
     override def validateObject(key: String, obj: PooledObject[JdbcConnection]): Boolean = {
       val dbURL = dataSource.get(key)
       val connection = obj.getObject.connection
-      var st:Statement = null
+      var st: Statement = null
       try {
         st = connection.createStatement
         st.execute("SELECT 1")
@@ -123,7 +122,7 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
         case _: SQLException =>
           LOG.info("Invalidate connection for url: {}", dbURL)
       } finally try
-          if (st != null) st.close()
+        if (st != null) st.close()
       catch {
         case ex: SQLException =>
           LOG.info("Exception closing statement", ex)

@@ -11,7 +11,7 @@ object ClickHouseDataSource {
 
   def apply(url: String): ClickHouseDataSource = splitUrl(url)
 
-  private def splitUrl(url: String):ClickHouseDataSource = {
+  private def splitUrl(url: String): ClickHouseDataSource = {
     val m = URL_TEMPLATE.matcher(url)
     if (!m.matches) throw new IllegalArgumentException("Incorrect url")
     var database = m.group(2)
@@ -28,7 +28,7 @@ object ClickHouseDataSource {
 
   def apply(hosts: Iterable[String], port: Int, database: String): ClickHouseDataSource = {
 
-    val value = hosts.map(host => (host, JDBC_CLICKHOUSE_PREFIX + s"//$host:$port" +  database)).toMap
+    val value = hosts.map(host => (host, JDBC_CLICKHOUSE_PREFIX + s"//$host:$port" + database)).toMap
 
     new ClickHouseDataSource(value, database)
   }
