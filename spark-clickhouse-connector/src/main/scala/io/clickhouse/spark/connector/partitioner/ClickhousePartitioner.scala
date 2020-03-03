@@ -4,16 +4,17 @@ import io.clickhouse.spark.connector.ClickhouseConnector
 import org.apache.spark.Partition
 import org.joda.time.DateTime
 
-trait ClickhousePartitioner extends Serializable{
+trait ClickhousePartitioner extends Serializable {
 
   val partitions: Array[Partition]
+
   def numPartitions: Int = partitions.length
 }
 
 /**
- * Partitioner that provides functionality for splitting shard into small partitions by date range.
- * Supported several range types e.g. Daily, Hourly
- */
+  * Partitioner that provides functionality for splitting shard into small partitions by date range.
+  * Supported several range types e.g. Daily, Hourly
+  */
 class DatedClickhousePartitioner(connector: ClickhouseConnector,
                                  dated: (DateTime, DateTime),
                                  rangeType: RangeType,
@@ -22,7 +23,9 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
 
 
   override val partitions: Array[Partition] = {
+
     for (date <- DateRange.range(dated._1, dated._2, rangeType)) yield {
+
       var i = 0
       for (source <- connector.dataSource) yield {
         val rotatedHosts = rotateRight(source._2, i)
@@ -41,8 +44,8 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
 }
 
 /**
- * Partitioner that provides functionality for splitting RDD with partitions by shards
- */
+  * Partitioner that provides functionality for splitting RDD with partitions by shards
+  */
 class SimpleClickhousePartitioner(connector: ClickhouseConnector) extends ClickhousePartitioner {
 
   override val partitions: Array[Partition] = (for {
@@ -61,8 +64,8 @@ class SimpleClickhousePartitioner(connector: ClickhouseConnector) extends Clickh
 }
 
 /**
- * Partitioner with custom split strategy for each shard
- */
+  * Partitioner with custom split strategy for each shard
+  */
 class CustomClickhousePartitioner(connector: ClickhouseConnector,
                                   partitionSeq: Seq[String]
                                  ) extends SupportPartitionReplica with ClickhousePartitioner {
