@@ -22,9 +22,9 @@ case class DateRange(dated: DateTime,
 
   def sql(): String = {
     if (rType == RangeType.HOUR)
-      s"toStartOfHour($pk) = '${dated.hourOfDay.roundFloorCopy.toString("yyyy-MM-dd HH:mm:ss")}'"
+      s"$pk = '${dated.hourOfDay.roundFloorCopy.toString("yyyy-MM-dd HH:mm:ss")}'"
     else
-      s"toYYYYMMDD($pk) = '${dated.toString("yyyyMMdd")}'"
+      s"$pk = '${dated.toString("yyyy-MM-dd")}'"
   }
 
   override def toString: String = {
