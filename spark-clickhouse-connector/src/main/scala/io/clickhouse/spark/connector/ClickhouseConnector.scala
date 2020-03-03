@@ -18,7 +18,7 @@ final case class ShardUnavailableException(private val message: String = "",
 
 class ClickhouseConnector(conf: ConnectorConf,
                           initDataSource: ClickHouseDataSource,
-                          cluster: String
+                          cluster: Option[String]
                          )
   extends Serializable with Logging {
 
@@ -42,7 +42,6 @@ class ClickhouseConnector(conf: ConnectorConf,
           s"all servers for shard (${partition.shardId}) are not accessible: (${partition.endpoints.map(_.getHostAddress).mkString(",")})", e)
     }
   }
-
 
   private def executeStatement(shardNodes: Iterator[String], query: String, cp: ConnectionPooledDBUrl): TableScanner = {
 
@@ -79,7 +78,7 @@ class ClickhouseConnector(conf: ConnectorConf,
   private def getClusterMetadata = {
     val query =
       s"select shard_num, groupArray(host_name) as names, groupArray(host_address) as addresses from system.clusters " +
-        s"where cluster = '$cluster' group by shard_num"
+        s"where cluster = '${cluster.get}' group by shard_num"
 
     executeStatement(initDataSource.value.keys.iterator, query, getConnectionPool(conf, initDataSource))
       .map(rs => (rs.getInt("shard_num"),
@@ -95,33 +94,41 @@ class ClickhouseConnector(conf: ConnectorConf,
 
   private def makeDataSource(): (Map[Int, Seq[InetAddress]], ClickHouseDataSource) = {
 
-    val clusterMeta = getClusterMetadata
+    if (cluster.isDefined) {
 
-    if (!conf.clickhouseAutoDiscoveryEnable) {
+      val clusterMeta = getClusterMetadata
 
-      //for each host in data_source detects shard_id, after that performed group by replicas.
-      //Also performed filtering hosts which doesn't contained into cluster metadata.
-      val ds =
-      initDataSource.value.keys
-        .map(v => (detectShard(clusterMeta, v), v))
-        .filter(_._1.isDefined)
-        .map(v => (v._1.get, v._2))
-        .groupBy(_._1)
-        .map(v => (v._1, v._2.map(m => InetAddress.getByName(m._2)).toList))
+      if (!conf.clickhouseAutoDiscoveryEnable) {
 
-      (ds, initDataSource)
+        //for each host in data_source detects shard_id, after that performed group by replicas.
+        //Also performed filtering hosts which doesn't contained into cluster metadata.
+        val ds =
+        initDataSource.value.keys
+          .map(v => (detectShard(clusterMeta, v), v))
+          .filter(_._1.isDefined)
+          .map(v => (v._1.get, v._2))
+          .groupBy(_._1)
+          .map(v => (v._1, v._2.map(m => InetAddress.getByName(m._2)).toList))
+
+        (ds, initDataSource)
+      }
+      else {
+        logDebug("cluster auto-discovery enabled")
+        //cluster auto-discovery enabled, make new datasource from cluster metadata
+        val newDataSource =
+          ClickHouseDataSource(clusterMeta.flatMap(_._3), conf.clickhousePortDefault, initDataSource.database)
+
+        val ds = clusterMeta
+          .map(v => (v._1, v._3.map(m => InetAddress.getByName(m)).toList))
+          .toMap
+
+        (ds, newDataSource)
+      }
     }
     else {
-      logDebug("cluster auto-discovery enabled")
-      //cluster auto-discovery enabled, make new datasource from cluster metadata
-      val newDataSource =
-        ClickHouseDataSource(clusterMeta.flatMap(_._3), conf.clickhousePortDefault, initDataSource.database)
-
-      val ds = clusterMeta
-        .map(v => (v._1, v._3.map(m => InetAddress.getByName(m)).toList))
-        .toMap
-
-      (ds, newDataSource)
+      //Used for clickhouse installation without 'cluster' option e.g. single server installation.
+      //It's assumed, that all hosts in datasource are single shard and contains the same data.
+      (Map(0 -> initDataSource.value.keys.map(InetAddress.getByName).toList), initDataSource)
     }
   }
 }
@@ -131,7 +138,7 @@ object ClickhouseConnector {
 
   private val connectionPoolCache = new TrieMap[(ConnectorConf, ClickHouseDataSource), ConnectionPooledDBUrl]
 
-  def apply(sc: SparkContext, cluster: String): ClickhouseConnector = {
+  def apply(sc: SparkContext, cluster: Option[String]): ClickhouseConnector = {
     val conf: ConnectorConf = ConnectorConf.fromSparkConf(sc.getConf)
 
     val dataSource = ClickHouseDataSource(conf.сlickhouseUrl)

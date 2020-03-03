@@ -9,7 +9,7 @@ object NodeAddress {
   private val addressCache = new TrieMap[InetAddress, Set[String]]
 
   /** Returns a list of IP-addresses and host names that identify a node.
-    * Useful for giving Spark the list of preferred nodes for the Spark partition. */
+   * Useful for giving Spark the list of preferred nodes for the Spark partition. */
   def hostNames(rpcAddress: InetAddress): Set[String] = {
 
     addressCache.get(rpcAddress) match {

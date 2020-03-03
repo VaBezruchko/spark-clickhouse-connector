@@ -10,15 +10,14 @@ import org.apache.spark.sql.jdbc.JdbcDialects
 import org.apache.spark.sql.types.StructType
 
 
-
-final class ClickhouseRow (values: Array[Any],
-                           override val schema: StructType
-                          )
-  extends GenericRowWithSchema(values, schema){
+final class ClickhouseRow(values: Array[Any],
+                          override val schema: StructType
+                         )
+  extends GenericRowWithSchema(values, schema) {
 }
 
 
-class ClickhouseRowFactory(metadata: StructType) extends RowReaderFactory{
+class ClickhouseRowFactory(metadata: StructType) extends RowReaderFactory {
 
   private def resultSetToObjectArray(rs: ResultSet): Array[Any] = {
     Array.tabulate[Any](rs.getMetaData.getColumnCount)(i => rs.getObject(i + 1))

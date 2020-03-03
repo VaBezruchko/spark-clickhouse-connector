@@ -6,9 +6,13 @@ import org.apache.spark.Partition
 import org.joda.time.{DateTime, Days, Hours}
 
 sealed trait RangeType {}
+
 object RangeType {
+
   case object HOUR extends RangeType
+
   case object DAY extends RangeType
+
 }
 
 case class DateRange(dated: DateTime,
@@ -36,10 +40,10 @@ trait EndpointPartition extends Partition {
 }
 
 case class ClickhousePartition(
-                              index: Int,
-                              shardId:Int,
-                              endpoints: Iterable[InetAddress],
-                              partitionSplit: Option[String] //addition primary key clause for spark partition splitting.
+                                index: Int,
+                                shardId: Int,
+                                endpoints: Iterable[InetAddress],
+                                partitionSplit: Option[String] //addition primary key clause for spark partition splitting.
                               ) extends EndpointPartition {
   override def toString: String = super.toString
 }
@@ -47,7 +51,7 @@ case class ClickhousePartition(
 
 object DateRange {
 
-  def range(startDate: DateTime, endDate: DateTime, rType: RangeType ): Seq[DateTime] = {
+  def range(startDate: DateTime, endDate: DateTime, rType: RangeType): Seq[DateTime] = {
 
     if (rType == RangeType.DAY)
       rangeByDay(startDate, endDate)
@@ -55,7 +59,7 @@ object DateRange {
       rangeByHour(startDate, endDate)
   }
 
-  def rangeByHour(startDate: DateTime, endDate: DateTime ): Seq[DateTime] = {
+  def rangeByHour(startDate: DateTime, endDate: DateTime): Seq[DateTime] = {
 
     val hours = Hours.hoursBetween(
       startDate.hourOfDay().roundFloorCopy(),
@@ -63,7 +67,8 @@ object DateRange {
     ).getHours
     (0 to hours).map(i => startDate.plusHours(i)).toList
   }
-  def rangeByDay(startDate: DateTime, endDate: DateTime ): Seq[DateTime] = {
+
+  def rangeByDay(startDate: DateTime, endDate: DateTime): Seq[DateTime] = {
 
     val days = Days.daysBetween(
       startDate.withTimeAtStartOfDay(),
