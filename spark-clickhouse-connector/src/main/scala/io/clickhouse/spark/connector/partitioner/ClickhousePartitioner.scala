@@ -12,9 +12,9 @@ trait ClickhousePartitioner extends Serializable {
 }
 
 /**
- * Partitioner that provides functionality for splitting shard into small partitions by date range.
- * Supported several range types e.g. Daily, Hourly
- */
+  * Partitioner that provides functionality for splitting shard into small partitions by date range.
+  * Supported several range types e.g. Daily, Hourly
+  */
 class DatedClickhousePartitioner(connector: ClickhouseConnector,
                                  dated: (DateTime, DateTime),
                                  rangeType: RangeType,
@@ -24,11 +24,10 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
 
   override val partitions: Array[Partition] = {
 
-    for (source <- connector.dataSource) yield {
+    for (date <- DateRange.range(dated._1, dated._2, rangeType)) yield {
 
       var i = 0
-      for (date <- DateRange.range(dated._1, dated._2, rangeType)) yield {
-
+      for (source <- connector.dataSource) yield {
         val rotatedHosts = rotateRight(source._2, i)
         val shardId = source._1
         i += 1
@@ -45,8 +44,8 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
 }
 
 /**
- * Partitioner that provides functionality for splitting RDD with partitions by shards
- */
+  * Partitioner that provides functionality for splitting RDD with partitions by shards
+  */
 class SimpleClickhousePartitioner(connector: ClickhouseConnector) extends ClickhousePartitioner {
 
   override val partitions: Array[Partition] = (for {
@@ -65,8 +64,8 @@ class SimpleClickhousePartitioner(connector: ClickhouseConnector) extends Clickh
 }
 
 /**
- * Partitioner with custom split strategy for each shard
- */
+  * Partitioner with custom split strategy for each shard
+  */
 class CustomClickhousePartitioner(connector: ClickhouseConnector,
                                   partitionSeq: Seq[String]
                                  ) extends SupportPartitionReplica with ClickhousePartitioner {
