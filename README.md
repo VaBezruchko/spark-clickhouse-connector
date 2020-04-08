@@ -57,7 +57,7 @@ You need to provide in home directory two files:
 
 ### Prerequisites 
 
-* Copy spark-clickhouse-connector_2.11-2.4.0_0.23.jar to spark lib directory
+* Copy spark-clickhouse-connector_2.11-2.4.0_0.25.jar to spark lib directory
 * Copy ru.yandex.clickhouse.clickhouse-jdbc to spark lib directory
 * Add dependency to your spark project
 ```

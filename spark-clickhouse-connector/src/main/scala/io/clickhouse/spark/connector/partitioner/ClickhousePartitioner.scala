@@ -24,7 +24,7 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
 
   override val partitions: Array[Partition] = {
 
-    for (source <- connector.dataSource) yield {
+    for (source <- connector.dataSource) yield { // (shard_num, List(InetAddress))
 
       var i = 0
       for (date <- DateRange.range(dated._1, dated._2, rangeType)) yield {
@@ -36,7 +36,7 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
         ClickhousePartition(0, shardId, rotatedHosts, Some(DateRange(date, rangeType, primaryKeyName).sql()))
       }
     }
-    }.flatMap(_.seq)
+  }.flatMap(_.seq)
     .zipWithIndex
     .map { case (p, index) => p.copy(index = index) }
     .toArray[Partition]
@@ -73,7 +73,7 @@ class CustomClickhousePartitioner(connector: ClickhouseConnector,
 
   override val partitions: Array[Partition] = {
 
-    for (source <- connector.dataSource) yield {
+    for (source <- connector.dataSource) yield { // (shard_num, List(InetAddress))
 
       var i = 0
       for (part <- partitionSeq) yield {
@@ -85,7 +85,7 @@ class CustomClickhousePartitioner(connector: ClickhouseConnector,
         ClickhousePartition(0, shardId, rotatedHosts, Some(part))
       }
     }
-    }.flatMap(_.seq)
+  }.flatMap(_.seq)
     .zipWithIndex
     .map { case (p, index) => p.copy(index = index) }
     .toArray[Partition]

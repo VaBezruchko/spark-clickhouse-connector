@@ -4,9 +4,10 @@ import java.io.Serializable
 import java.sql.{Connection, Driver, SQLException, Statement}
 import java.util.{NoSuchElementException, Properties}
 
-import org.apache.commons.pool2.{KeyedPooledObjectFactory, PooledObject}
 import org.apache.commons.pool2.impl.{DefaultPooledObject, GenericKeyedObjectPool, GenericKeyedObjectPoolConfig}
+import org.apache.commons.pool2.{KeyedPooledObjectFactory, PooledObject}
 import org.slf4j.LoggerFactory
+import ru.yandex.clickhouse.except.ClickHouseException
 
 case class JdbcConnection(shard: String, connection: Connection)
 
@@ -46,14 +47,8 @@ class ConnectionPooledDBUrl(val dataSource: Map[String, String],
     new GenericKeyedObjectPool[String, JdbcConnection](new PoolableFactory, config)
   }
 
-  def getConnection(shard: String): JdbcConnection = try
-    this.pool.borrowObject(shard)
-  catch {
-    case ex: NoSuchElementException =>
-      throw ex
-    case ex: Exception =>
-      throw new RuntimeException(String.format("Exception while getting DB connection:  Cannot connect to database server: %s, url: %s", shard, dataSource.get(shard)), ex)
-  }
+
+  def getConnection(shard: String): JdbcConnection = this.pool.borrowObject(shard)
 
   def releaseConnection(con: JdbcConnection): Unit = {
     try

@@ -1,11 +1,11 @@
 package io.clickhouse.spark.connector
 
 import io.clickhouse.spark.connector.partitioner._
-import org.apache.spark.metrics.clickhouse.InputMetricsUpdater
+import org.apache.spark._
 import org.apache.spark.internal.Logging
+import org.apache.spark.metrics.clickhouse.InputMetricsUpdater
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{ClickhouseRowFactory, Row}
-import org.apache.spark._
 import org.joda.time.DateTime
 
 

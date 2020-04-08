@@ -44,9 +44,7 @@ case class ClickhousePartition(
                                 shardId: Int,
                                 endpoints: Iterable[InetAddress],
                                 partitionSplit: Option[String] //addition primary key clause for spark partition splitting.
-                              ) extends EndpointPartition {
-  override def toString: String = super.toString
-}
+                              ) extends EndpointPartition
 
 
 object DateRange {

@@ -12,7 +12,7 @@ lazy val creds = Seq(credentials += Credentials(Path.userHome / ".sbt" / "creden
 val commonSettings = creds ++ Seq(
   name :=  "spark-clickhouse-connector",
   organization := "io.clickhouse",
-  version := "0.24",
+  version := "0.25",
   crossScalaVersions   := Seq(Versions.scala211, Versions.scala212),
   crossVersion         := CrossVersion.binary,
   versionStatus        := Versions.status(scalaVersion.value, scalaBinaryVersion.value),

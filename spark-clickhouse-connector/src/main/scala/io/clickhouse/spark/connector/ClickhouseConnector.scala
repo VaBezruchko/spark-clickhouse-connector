@@ -1,14 +1,13 @@
 package io.clickhouse.spark.connector
 
-import java.io.IOException
 import java.net.InetAddress
-import java.util.{ConcurrentModificationException, NoSuchElementException}
+import java.util.ConcurrentModificationException
 
-import io.clickhouse.spark.connection.{ClickHouseDataSource, ConnectionPooledDBUrl}
+import io.clickhouse.spark.connection.{ClickHouseDataSource, ConnectionPooledDBUrl, JdbcConnection}
 import io.clickhouse.spark.connector.ClickhouseConnector.getConnectionPool
 import io.clickhouse.spark.connector.partitioner.{ClickhousePartition, PartitionQuery}
-import org.apache.spark.internal.Logging
 import org.apache.spark.SparkContext
+import org.apache.spark.internal.Logging
 
 import scala.collection.concurrent.TrieMap
 
@@ -43,35 +42,29 @@ class ClickhouseConnector(conf: ConnectorConf,
     }
   }
 
+  @scala.annotation.tailrec
   private def executeStatement(shardNodes: Iterator[String], query: String, cp: ConnectionPooledDBUrl): TableScanner = {
 
-    if (!shardNodes.hasNext) //there are no shard left
-      throw ShardUnavailableException()
+    if (!shardNodes.hasNext) throw ShardUnavailableException() //there are no replica left
 
-    val shard: String = shardNodes.next()
-
+    val replicaServer: String = shardNodes.next()
+    var jdbc: JdbcConnection = null
     try {
-      val jdbc = cp.getConnection(shard)
+      jdbc = cp.getConnection(replicaServer)
 
-      try {
-        val statement = jdbc.connection.prepareStatement(query)
+      val statement = jdbc.connection.prepareStatement(query)
 
-        new TableScanner(cp, jdbc, statement)
-      }
-      catch {
-        case e: Throwable =>
-          cp.releaseConnection(jdbc)
-          throw new IOException(s"Failed to execute query to Clickhouse: $query", e)
-      }
+      new TableScanner(cp, jdbc, statement)
     }
     catch {
-      case e: NoSuchElementException =>
-        // go to the next shard with warning message
-        logWarning(s"Exception with execute statement, shard_node: $shard", e)
-        executeStatement(shardNodes, query, cp)
-      case e: IOException => throw e
       case e: Throwable =>
-        throw new IOException(s"Failed to open connection to Clickhouse at $shard", e)
+        // go to the next replica with warning message
+        logWarning(s"Failed to execute query at $replicaServer", e)
+
+        if (jdbc != null) {
+          cp.releaseConnection(jdbc)
+        }
+        executeStatement(shardNodes, query, cp)
     }
   }
 
@@ -87,7 +80,8 @@ class ClickhouseConnector(conf: ConnectorConf,
       .toList
   }
 
-  /** find host in cluster metadata and detect shard */
+  /** find host in cluster metadata and detect shard
+   * return shard_num */
   private def detectShard(clusterMetadata: List[(Int, Array[String], Array[String])], host: String): Option[Int] = {
     clusterMetadata.find(v => v._2.contains(host) || v._3.contains(host)).map(_._1)
   }
@@ -103,13 +97,12 @@ class ClickhouseConnector(conf: ConnectorConf,
         //for each host in data_source detects shard_id, after that performed group by replicas.
         //Also performed filtering hosts which doesn't contained into cluster metadata.
         val ds =
-        initDataSource.value.keys
-          .map(v => (detectShard(clusterMeta, v), v))
-          .filter(_._1.isDefined)
-          .map(v => (v._1.get, v._2))
-          .groupBy(_._1)
-          .map(v => (v._1, v._2.map(m => InetAddress.getByName(m._2)).toList))
-
+          initDataSource.value.keys
+            .map(v => (detectShard(clusterMeta, v), v)) //(shard_num, host)
+            .filter(_._1.isDefined) //filter undefined hosts
+            .map(v => (v._1.get, v._2)) //remove Option[]
+            .groupBy(_._1) //group by shard_num
+            .map(v => (v._1, v._2.map(m => InetAddress.getByName(m._2)).toList)) // (shard_num, List(InetAddress))
         (ds, initDataSource)
       }
       else {
