@@ -24,13 +24,12 @@ class DatedClickhousePartitioner(connector: ClickhouseConnector,
 
   override val partitions: Array[Partition] = {
 
+    var i = -1
     for (date <- DateRange.range(dated._1, dated._2, rangeType)) yield {
-
-      var i = 0
+      i += 1
       for (source <- connector.dataSource) yield {
         val rotatedHosts = rotateRight(source._2, i)
         val shardId = source._1
-        i += 1
         // partition index will be set later
         ClickhousePartition(0, shardId, rotatedHosts, Some(DateRange(date, rangeType, primaryKeyName).sql()))
       }
