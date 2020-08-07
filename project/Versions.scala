@@ -13,6 +13,7 @@ object Versions {
   val commons_pool    =  "2.5.0"
   val clickhouse_jdbc = "0.1.50"
   val JDK             = "1.8"
+  val joda_version    = "2.10.6"
 
   val status = (versionInReapply: String, binaryInReapply: String) =>
     println(s"""

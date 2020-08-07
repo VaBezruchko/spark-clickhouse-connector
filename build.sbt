@@ -57,6 +57,8 @@ val deps = Seq (
   "com.codahale.metrics"    %   "metrics-json"           % CodaHaleMetrics % "provided",
 
   "ru.yandex.clickhouse"    %   "clickhouse-jdbc"        % clickhouse_jdbc % "provided",
+
+  "joda-time"               %   "joda-time"              % joda_version  % "provided",
   "org.apache.commons"      %   "commons-pool2"          % commons_pool
 )
 
